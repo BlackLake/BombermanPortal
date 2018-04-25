@@ -34,13 +34,13 @@ public class Flame extends Entity implements ActionListener {
         setVisible(true);
         switch (direction) {
             case Up:
-                loadImage("images/walls/FlameUp.png");
+                loadImage("images/walls/FlameUp.png");break;
             case Right:
-                loadImage("images/walls/FlameRight.png");
+                loadImage("images/walls/FlameRight.png");break;
             case Down:
-                loadImage("images/walls/FlameDown.png");
+                loadImage("images/walls/FlameDown.png");break;
             case Left:
-                loadImage("images/walls/FlameLeft.png");
+                loadImage("images/walls/FlameLeft.png");break;
         }
         timer = new Timer(500, (ActionListener) this);
         timer.start();
