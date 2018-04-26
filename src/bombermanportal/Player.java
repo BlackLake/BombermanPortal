@@ -14,6 +14,7 @@ public class Player extends Entity {
     private int dx;
     private int dy;
     int bombCount = 1;
+    int bombFlameLength = 1;
 
     public Player() {
         super();

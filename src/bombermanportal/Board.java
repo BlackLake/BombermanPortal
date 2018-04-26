@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Random;
 import javax.sound.sampled.Clip;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -39,6 +40,8 @@ public class Board extends JPanel implements ActionListener {
     static AudioContext ac = new AudioContext();
     Color backGroundColor = Color.decode("#55A704");
     Image background;
+    Random rnd = new Random();
+    int powerUpChance = 50;
 
     public Board() {
         initBoard();
@@ -111,6 +114,8 @@ public class Board extends JPanel implements ActionListener {
                 //4 : Bomb
                 //5 : Flame
                 //6 : player 2
+                //7 : PowerUpExtraBomb
+                //8 : PowerUpExtraFlame
 
                 if ((row == 0) || (row == 14)) {
                     map[row][column] = 2;//NonFragileWall
@@ -148,6 +153,7 @@ public class Board extends JPanel implements ActionListener {
         g.drawImage(background, 0, 0, null);//background image   
         showMap();
         boolean last = false;
+        int flameLength = 0;
 
         for (int line = 0; line < 15; line++) {
             for (int column = 0; column < 17; column++) {
@@ -167,21 +173,33 @@ public class Board extends JPanel implements ActionListener {
                         if (!entities[line][column].isVisible()) {
                             if (((Bomb) entities[line][column]).owner == 0) {
                                 players[0].bombCount++;
+                                flameLength = players[0].bombFlameLength;
                             }
                             if (((Bomb) entities[line][column]).owner == 1) {
                                 players[1].bombCount++;
+                                flameLength = players[1].bombFlameLength;
                             }
                             bombSound();
-                            for (int i = 1; i <= 2; i++) {// flame count = 2
+                            for (int i = 1; i <= flameLength; i++) {
                                 if (map[line + i][column] == 2) {//NonFragileWall
                                     break;
                                 }
                                 if (map[line + i][column] == 3) {//FragileWall
-                                    map[line + i][column] = 0;
-                                    entities[line + i][column] = new Flame(x, y, FlameDirection.Down);
+                                    if (rnd.nextInt(100) < powerUpChance) {//chance
+                                        if (rnd.nextBoolean()) {
+                                            map[line + i][column] = 7;
+                                            entities[line + i][column] = new PowerUpExtraBomb(x, y);
+                                        } else {
+                                            map[line + i][column] = 8;
+                                            entities[line + i][column] = new PowerUpExplosion(x, y);
+                                        }
+                                    } else {
+                                        map[line + i][column] = 0;
+                                        entities[line + i][column] = new Flame(x, y, FlameDirection.Down);
+                                    }
                                     break;
                                 }
-                                if (map[line + i][column] == 0) {//space
+                                if (map[line + i][column] == 0 || map[line + i][column] == 7 || map[line + i][column] == 8) {//space
                                     map[line + i][column] = 0;
                                     entities[line + i][column] = new Flame(x, y, FlameDirection.Down);
                                 }
@@ -206,16 +224,26 @@ public class Board extends JPanel implements ActionListener {
                                     });
                                 }
                             }
-                            for (int i = 0; i <= 2; i++) {
-                                if (map[line][column + i] == 2) {//NonFragileWall
+                            for (int i = 0; i <= flameLength; i++) {
+                                if (map[line][column + i] == 2) {
                                     break;
                                 }
                                 if (map[line][column + i] == 3) {//FragileWall
-                                    map[line][column + i] = 0;
-                                    entities[line][column + i] = new Flame(x, y, FlameDirection.Right);
+                                    if (rnd.nextInt(100) < powerUpChance) {// chance
+                                        if (rnd.nextBoolean()) {
+                                            map[line][column + i] = 7;
+                                            entities[line][column + i] = new PowerUpExtraBomb(x, y);
+                                        } else {
+                                            map[line][column + i] = 8;
+                                            entities[line][column + i] = new PowerUpExplosion(x, y);
+                                        }
+                                    } else {
+                                        map[line][column + i] = 0;
+                                        entities[line][column + i] = new Flame(x, y, FlameDirection.Right);
+                                    }
                                     break;
                                 }
-                                if (map[line][column + i] == 0) {//space
+                                if (map[line][column + i] == 0 || map[line][column + i] == 7 || map[line][column + i] == 8) {//space
                                     map[line][column + i] = 0;
                                     entities[line][column + i] = new Flame(x, y, FlameDirection.Right);
                                 }
@@ -241,16 +269,26 @@ public class Board extends JPanel implements ActionListener {
                                     });
                                 }
                             }
-                            for (int i = 0; i <= 2; i++) {
+                            for (int i = 0; i <= flameLength; i++) {
                                 if (map[line - i][column] == 2) {//NonFragileWall
                                     break;
                                 }
                                 if (map[line - i][column] == 3) {//FragileWall
-                                    map[line - i][column] = 0;
-                                    entities[line - i][column] = new Flame(x, y, FlameDirection.Up);
+                                    if (rnd.nextInt(100) < powerUpChance) {// chance
+                                        if (rnd.nextBoolean()) {
+                                            map[line - i][column] = 7;
+                                            entities[line - i][column] = new PowerUpExtraBomb(x, y);
+                                        } else {
+                                            map[line - i][column] = 8;
+                                            entities[line - i][column] = new PowerUpExplosion(x, y);
+                                        }
+                                    } else {
+                                        map[line - i][column] = 0;
+                                        entities[line - i][column] = new Flame(x, y, FlameDirection.Up);
+                                    }
                                     break;
                                 }
-                                if (map[line - i][column] == 0) {//pace
+                                if (map[line - i][column] == 0 || map[line - i][column] == 7 || map[line - i][column] == 8) {//pace
                                     map[line - i][column] = 0;
                                     entities[line - i][column] = new Flame(x, y, FlameDirection.Up);
                                 }
@@ -275,16 +313,26 @@ public class Board extends JPanel implements ActionListener {
                                     });
                                 }
                             }
-                            for (int i = 0; i <= 2; i++) {
+                            for (int i = 0; i <= flameLength; i++) {
                                 if (map[line][column - i] == 2) {//NonFragileWall
                                     break;
                                 }
                                 if (map[line][column - i] == 3) {//FragileWall
-                                    map[line][column - i] = 0;
-                                    entities[line][column - i] = new Flame(x, y, FlameDirection.Left);
+                                    if (rnd.nextInt(100) < powerUpChance) {//chance
+                                        if (rnd.nextBoolean()) {
+                                            map[line][column - i] = 7;
+                                            entities[line][column - i] = new PowerUpExtraBomb(x, y);
+                                        } else {
+                                            map[line][column - i] = 8;
+                                            entities[line][column - i] = new PowerUpExplosion(x, y);
+                                        }
+                                    } else {
+                                        map[line][column - i] = 0;
+                                        entities[line][column - i] = new Flame(x, y, FlameDirection.Left);
+                                    }
                                     break;
                                 }
-                                if (map[line][column - i] == 0) {//space
+                                if (map[line][column - i] == 0 || map[line][column - i] == 7 || map[line][column - i] == 8) {//space
                                     map[line][column - i] = 0;
                                     entities[line][column - i] = new Flame(x, y, FlameDirection.Left);
                                 }
@@ -407,26 +455,40 @@ public class Board extends JPanel implements ActionListener {
             listener.GetKeys().stream().map((key)
                     -> {
                 if (key == KeyEvent.VK_LEFT) {
-
-                    if (map[player1Y][player1X - 1] == 0) {
+                    if (map[player1Y][player1X - 1] == 0 || map[player1Y][player1X - 1] == 7 || map[player1Y][player1X - 1] == 8) {
                         if (map[player1Y][player1X] != 4) {
                             map[player1Y][player1X] = 0;
+                        }
+                        if (map[player1Y][player1X - 1] == 7) {
+                            players[0].bombCount++;
+                            entities[player1Y][player1X - 1].setVisible(false);
+                        }
+                        if (map[player1Y][player1X - 1] == 8) {
+                            players[0].bombFlameLength++;
+                            entities[player1Y][player1X - 1].setVisible(false);
                         }
                         player1X--;
                         map[player1Y][player1X] = 1;
                         players[0].setDx(-32);
                         players[0].move();
                     }
-
                 }
                 return key;
             }).map((key)
                     -> {
                 if (key == KeyEvent.VK_RIGHT) {
 
-                    if (map[player1Y][player1X + 1] == 0) {
+                    if (map[player1Y][player1X + 1] == 0 || map[player1Y][player1X + 1] == 7 || map[player1Y][player1X + 1] == 8) {
                         if (map[player1Y][player1X] != 4) {
                             map[player1Y][player1X] = 0;
+                        }
+                        if (map[player1Y][player1X + 1] == 7) {
+                            players[0].bombCount++;
+                            entities[player1Y][player1X + 1].setVisible(false);
+                        }
+                        if (map[player1Y][player1X + 1] == 8) {
+                            players[0].bombFlameLength++;
+                            entities[player1Y][player1X + 1].setVisible(false);
                         }
                         player1X++;
                         map[player1Y][player1X] = 1;
@@ -440,9 +502,17 @@ public class Board extends JPanel implements ActionListener {
                     -> {
                 if (key == KeyEvent.VK_UP) {
 
-                    if (map[player1Y - 1][player1X] == 0) {
+                    if (map[player1Y - 1][player1X] == 0 || map[player1Y - 1][player1X] == 7 || map[player1Y - 1][player1X] == 8) {
                         if (map[player1Y][player1X] != 4) {
                             map[player1Y][player1X] = 0;
+                        }
+                        if (map[player1Y - 1][player1X] == 7) {
+                            players[0].bombCount++;
+                            entities[player1Y-1][player1X].setVisible(false);
+                        }
+                        if (map[player1Y - 1][player1X] == 8) {
+                            players[0].bombFlameLength++;
+                            entities[player1Y-1][player1X].setVisible(false);
                         }
                         player1Y--;
                         map[player1Y][player1X] = 1;
@@ -456,9 +526,17 @@ public class Board extends JPanel implements ActionListener {
                     -> {
                 if (key == KeyEvent.VK_DOWN) {
 
-                    if (map[player1Y + 1][player1X] == 0) {
+                    if (map[player1Y + 1][player1X] == 0 || map[player1Y + 1][player1X] == 7 || map[player1Y + 1][player1X] == 8) {
                         if (map[player1Y][player1X] != 4) {
                             map[player1Y][player1X] = 0;
+                        }
+                        if (map[player1Y + 1][player1X] == 7) {
+                            players[0].bombCount++;
+                            entities[player1Y+1][player1X].setVisible(false);
+                        }
+                        if (map[player1Y + 1][player1X] == 8) {
+                            players[0].bombFlameLength++;
+                            entities[player1Y+1][player1X].setVisible(false);
                         }
                         player1Y++;
                         map[player1Y][player1X] = 1;
@@ -472,9 +550,17 @@ public class Board extends JPanel implements ActionListener {
                     -> {
                 if (key == KeyEvent.VK_A) {
 
-                    if (map[player2Y][player2X - 1] == 0) {
+                    if (map[player2Y][player2X - 1] == 0 || map[player2Y][player2X - 1] == 7 || map[player2Y][player2X - 1] == 8) {
                         if (map[player2Y][player2X] != 4) {
                             map[player2Y][player2X] = 0;
+                        }
+                        if (map[player2Y][player2X - 1] == 7) {
+                            players[1].bombCount++;
+                            entities[player2Y][player2X - 1].setVisible(false);
+                        }
+                        if (map[player2Y][player2X - 1] == 8) {
+                            players[1].bombFlameLength++;
+                            entities[player2Y][player2X - 1].setVisible(false);
                         }
                         player2X--;
                         map[player2Y][player2X] = 1;
@@ -488,9 +574,17 @@ public class Board extends JPanel implements ActionListener {
                     -> {
                 if (key == KeyEvent.VK_D) {
 
-                    if (map[player2Y][player2X + 1] == 0) {
+                    if (map[player2Y][player2X + 1] == 0 || map[player2Y][player2X + 1] == 7 || map[player2Y][player2X + 1] == 8) {
                         if (map[player2Y][player2X] != 4) {
                             map[player2Y][player2X] = 0;
+                        }
+                        if (map[player2Y][player2X + 1] == 7) {
+                            players[1].bombCount++;
+                            entities[player2Y][player2X + 1].setVisible(false);
+                        }
+                        if (map[player2Y][player2X + 1] == 8) {
+                            players[1].bombFlameLength++;
+                            entities[player2Y][player2X + 1].setVisible(false);
                         }
                         player2X++;
                         map[player2Y][player2X] = 1;
@@ -503,9 +597,17 @@ public class Board extends JPanel implements ActionListener {
                     -> {
                 if (key == KeyEvent.VK_W) {
 
-                    if (map[player2Y - 1][player2X] == 0) {
+                    if (map[player2Y - 1][player2X] == 0 || map[player2Y - 1][player2X] == 7 || map[player2Y - 1][player2X] == 8) {
                         if (map[player2Y][player2X] != 4) {
                             map[player2Y][player2X] = 0;
+                        }
+                        if (map[player2Y-1][player2X] == 7) {
+                            players[1].bombCount++;
+                            entities[player2Y - 1][player2X].setVisible(false);
+                        }
+                        if (map[player2Y-1][player2X] == 8) {
+                            players[1].bombFlameLength++;
+                            entities[player2Y - 1][player2X].setVisible(false);
                         }
                         player2Y--;
                         map[player2Y][player2X] = 1;
@@ -519,9 +621,17 @@ public class Board extends JPanel implements ActionListener {
                     -> {
                 if (key == KeyEvent.VK_S) {
 
-                    if (map[player2Y + 1][player2X] == 0) {
+                    if (map[player2Y + 1][player2X] == 0 || map[player2Y + 1][player2X] == 7 ||map[player2Y + 1][player2X] == 8) {
                         if (map[player2Y][player2X] != 4) {
                             map[player2Y][player2X] = 0;
+                        }
+                        if (map[player2Y+1][player2X] == 7) {
+                            players[1].bombCount++;
+                            entities[player2Y + 1][player2X].setVisible(false);
+                        }
+                        if (map[player2Y+1][player2X] == 8) {
+                            players[1].bombFlameLength++;
+                            entities[player2Y + 1][player2X].setVisible(false);
                         }
                         player2Y++;
                         map[player2Y][player2X] = 1;
