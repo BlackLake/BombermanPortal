@@ -14,7 +14,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Random;
-import javax.sound.sampled.Clip;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -41,7 +40,8 @@ public class Board extends JPanel implements ActionListener {
     Color backGroundColor = Color.decode("#55A704");
     Image background;
     Random rnd = new Random();
-    int powerUpChance = 50;
+    int mapDensity = 100;
+    int powerUpChance = 110 - mapDensity;
 
     public Board() {
         initBoard();
@@ -84,30 +84,43 @@ public class Board extends JPanel implements ActionListener {
             JOptionPane.showMessageDialog(null, "Error with playing sound.");
         }
     }
+    
+    private boolean checkPlayerSpaces(int row , int column)
+    {
+        int playerSpaces[][] = new int[][] {{1,1},{1,2},{1,3},{2,1},{3,1},{13,14},{13,13},{13,15},{12,15},{11,15}};
+        for (int[] playerSpace : playerSpaces){
+            if (playerSpace[0]== row && playerSpace[1]==column) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private void drawMap() {
-
+        
         for (int row = 0; row < 15; row++) {
             for (int column = 0; column < 17; column++) {
                 x = column * multiplier;
                 y = row * multiplier + scorBoardSpace;
-                if ((row == 0) || (row == 14)) {
+                if ((row == 0) || (row == 14) || (column == 0) || (column == 16) ) {
                     entities[row][column] = new NonFragileWall(x, y);
                 } else if ((column % 2 == 0) && (row % 2 == 0)) {
                     entities[row][column] = new NonFragileWall(x, y);
-                } else if ((column == 0) || (column == 16)) {
-                    entities[row][column] = new NonFragileWall(x, y);
-                } else if ((row == 1) && (column == 1) || (row == 1) && (column == 2) || (row == 1) && (column == 3) || (row == 2) && (column == 1) || (row == 3) && (column == 1)) {
-                } else if ((row == 13) && (column == 15) || (row == 13) && (column == 14) || (row == 13) && (column == 13) || (row == 12) && (column == 15) || (row == 11) && (column == 15)) {
-                } else {
-                    entities[row][column] = new FragileWall(x, y);
+                } else if (checkPlayerSpaces(row, column)) {
+                    entities[row][column] = new Entity(x, y);
+                }else {
+                    if (rnd.nextInt(100) < mapDensity) {
+                        entities[row][column] = new FragileWall(x, y);
+                    } else {
+                        entities[row][column] = new Entity(x, y);
+                    }
                 }
             }
         }
 
         for (int row = 0; row < 15; row++) {
             for (int column = 0; column < 17; column++) {
-                //0 : space
+                //0 : Entity (space)
                 //1 : player 1
                 //2 : NonFragileWall
                 //3 : FragileWall
@@ -117,17 +130,11 @@ public class Board extends JPanel implements ActionListener {
                 //7 : PowerUpExtraBomb
                 //8 : PowerUpExtraFlame
 
-                if ((row == 0) || (row == 14)) {
-                    map[row][column] = 2;//NonFragileWall
-                } else if ((column % 2 == 0) && (row % 2 == 0)) {
-                    map[row][column] = 2;//NonFragileWall
-                } else if ((column == 0) || (column == 16)) {
-                    map[row][column] = 2;//NonFragileWall
-                } else if ((row == 1) && (column == 1) || (row == 1) && (column == 2) || (row == 1) && (column == 3) || (row == 2) && (column == 1) || (row == 3) && (column == 1)) {
+                if (entities[row][column].getClass() == Entity.class) {
                     map[row][column] = 0;//Space
-                } else if ((row == 13) && (column == 15) || (row == 13) && (column == 14) || (row == 13) && (column == 13) || (row == 12) && (column == 15) || (row == 11) && (column == 15)) {
-                    map[row][column] = 0;//Space
-                } else {
+                } else if (entities[row][column].getClass() == NonFragileWall.class) {
+                    map[row][column] = 2;//NonFragileWall
+                } else if (entities[row][column].getClass() == FragileWall.class) {
                     map[row][column] = 3;//FragileWall
                 }
             }
@@ -508,11 +515,11 @@ public class Board extends JPanel implements ActionListener {
                         }
                         if (map[player1Y - 1][player1X] == 7) {
                             players[0].bombCount++;
-                            entities[player1Y-1][player1X].setVisible(false);
+                            entities[player1Y - 1][player1X].setVisible(false);
                         }
                         if (map[player1Y - 1][player1X] == 8) {
                             players[0].bombFlameLength++;
-                            entities[player1Y-1][player1X].setVisible(false);
+                            entities[player1Y - 1][player1X].setVisible(false);
                         }
                         player1Y--;
                         map[player1Y][player1X] = 1;
@@ -532,11 +539,11 @@ public class Board extends JPanel implements ActionListener {
                         }
                         if (map[player1Y + 1][player1X] == 7) {
                             players[0].bombCount++;
-                            entities[player1Y+1][player1X].setVisible(false);
+                            entities[player1Y + 1][player1X].setVisible(false);
                         }
                         if (map[player1Y + 1][player1X] == 8) {
                             players[0].bombFlameLength++;
-                            entities[player1Y+1][player1X].setVisible(false);
+                            entities[player1Y + 1][player1X].setVisible(false);
                         }
                         player1Y++;
                         map[player1Y][player1X] = 1;
@@ -601,11 +608,11 @@ public class Board extends JPanel implements ActionListener {
                         if (map[player2Y][player2X] != 4) {
                             map[player2Y][player2X] = 0;
                         }
-                        if (map[player2Y-1][player2X] == 7) {
+                        if (map[player2Y - 1][player2X] == 7) {
                             players[1].bombCount++;
                             entities[player2Y - 1][player2X].setVisible(false);
                         }
-                        if (map[player2Y-1][player2X] == 8) {
+                        if (map[player2Y - 1][player2X] == 8) {
                             players[1].bombFlameLength++;
                             entities[player2Y - 1][player2X].setVisible(false);
                         }
@@ -621,15 +628,15 @@ public class Board extends JPanel implements ActionListener {
                     -> {
                 if (key == KeyEvent.VK_S) {
 
-                    if (map[player2Y + 1][player2X] == 0 || map[player2Y + 1][player2X] == 7 ||map[player2Y + 1][player2X] == 8) {
+                    if (map[player2Y + 1][player2X] == 0 || map[player2Y + 1][player2X] == 7 || map[player2Y + 1][player2X] == 8) {
                         if (map[player2Y][player2X] != 4) {
                             map[player2Y][player2X] = 0;
                         }
-                        if (map[player2Y+1][player2X] == 7) {
+                        if (map[player2Y + 1][player2X] == 7) {
                             players[1].bombCount++;
                             entities[player2Y + 1][player2X].setVisible(false);
                         }
-                        if (map[player2Y+1][player2X] == 8) {
+                        if (map[player2Y + 1][player2X] == 8) {
                             players[1].bombFlameLength++;
                             entities[player2Y + 1][player2X].setVisible(false);
                         }
